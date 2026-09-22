@@ -2,6 +2,23 @@
 
 begin;
 
+\echo 'Valid write: reserved seats within trip capacity'
+update trips
+set reserved_seats = reserved_seats + 1
+where id = 'TRIP-M2-20260429-0800'
+    and reserved_seats < capacity;
+\echo 'Valid write succeeded under trips_reserved_seats_valid'
+
+\echo 'Valid write: non-negative captured payment amount'
+insert into payments (
+        id, user_id, ticket_id, external_payment_reference,
+        amount, currency, status
+) values (
+        'VALID-PAYMENT-LECTURE2', 'USER-1', 'TICKET-1',
+        'lecture2-valid', 1.00, 'DKK', 'Captured'
+);
+\echo 'Valid write succeeded under payments_amount_valid'
+
 do $$
 begin
     begin

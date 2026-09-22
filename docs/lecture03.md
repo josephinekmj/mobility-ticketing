@@ -39,4 +39,11 @@ operational complexity. Use the materialized view for deliberately stale,
 cheap reporting windows.
 
 Run `database/postgres/experiments/lecture03_reporting.sql` after applying
-the base schema and migration `020_reporting_objects.sql`.
+the base schema and migration `020_reporting_objects.sql`. The experiment
+prints a `72.00` baseline for all four strategies, then inserts a temporary
+`10.00` captured payment. While it exists, the direct query, function, and
+trigger summary report `82.00`, but the materialized view remains stale at
+`72.00`. Refreshing the materialized view at that point changes it to `82.00`.
+The experiment then deletes the temporary payment, shows the trigger summary
+back at `72.00`, refreshes the materialized view again, and shows the restored
+`72.00` baseline before rolling back the transaction.

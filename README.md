@@ -100,3 +100,51 @@ identity-migration objects documented above.
 - `database/postgres/queries/`: reusable reporting queries.
 - `database/postgres/experiments/`: expected failures and isolated behavior demonstrations.
 - `docs/`: domain model, lab brief, audit, and Lecture 3-4 design notes.
+
+# Compulsory Assignment 1 review guide
+
+Submitted commit: See the exact immutable commit hash submitted in Moodle.
+
+Setup and reset instructions: [README setup and verification](#start-the-database)
+
+Full evidence matrix: [W39 evidence matrix](docs/w39-evidence.md)
+
+## Where to find the work
+
+Lecture 1: model, workload map and queries: [dossier](docs/dossier.md), [lab brief](docs/lab.md), [queries](database/postgres/003_queries.sql)
+
+Lecture 2: constraints and tests: [integrity catalogue](docs/lecture02.md), [post-contract tests](database/postgres/experiments/lecture02_constraints.sql)
+
+Lecture 3: reporting experiment and comparison: [reporting guide](docs/lecture03.md), [experiment](database/postgres/experiments/lecture03_reporting.sql), [query](database/postgres/queries/lecture03_revenue.sql)
+
+Lecture 4: migration stages and verification: [migration guide](docs/lecture04.md), [compatibility experiment](database/postgres/experiments/lecture04_compatibility.sql), [migration experiment](database/postgres/experiments/lecture04_product_identity.sql)
+
+## Two decisions worth discussing
+
+### Decision 1
+
+What did we choose? We identify a route stop by `(route_id, stop_sequence)`, not `(route_id, stop_id)`.
+
+What was the alternative? Treating each stop ID as unique within a route.
+
+Why does our choice fit MobilityTicketing? A route may visit the same stop more than once, while sequence gives deterministic ordering for timetable and route display queries.
+
+Which file or result supports it? [ER model and schema](docs/dossier.md) and [ordered-stops query](database/postgres/003_queries.sql).
+
+### Decision 2
+
+What did we choose? We compare direct SQL, a function, a materialized view, and a trigger-maintained summary for captured revenue.
+
+What was the alternative? Hiding reporting responsibility in one unexamined reporting table or always calculating at read time.
+
+Why does our choice fit MobilityTicketing? The direct query is the correctness reference; materialized views suit scheduled reports, while the trigger summary suits frequent low-latency reads when its write cost is justified.
+
+Which file or result supports it? [reporting comparison](docs/lecture03.md) and [staleness experiment](database/postgres/experiments/lecture03_reporting.sql).
+
+## One limitation or open question
+
+What does the implementation not guarantee? PostgreSQL constraints cannot make an external payment operation and a PostgreSQL transaction atomically consistent.
+
+Which evidence documents the boundary? [integrity catalogue](docs/lecture02.md).
+
+What should be checked or implemented next? Add an integration reconciliation and idempotency design for the external payment provider, while retaining database constraints for local invariants.
